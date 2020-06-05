@@ -2,23 +2,27 @@ import React, {Component} from 'react';
 import * as BooksAPI from './BooksAPI';
 import Book from "./Book";
 import {Link} from "react-router-dom";
-import BookShelf from "./BookShelf";
 
 class SearchPage extends Component{
     state = {
+        query:'',
         searchResults: [],
     }
 
     handleInputChange = (query) => {
-        BooksAPI.search(query).then((res)=> {
-            !('error' in res)&&this.setState(() => ({
-                    searchResults: res,
-                }))
-        }).catch(()=>(
+        if (query==='')
             this.setState(()=>({
-                searchResults: []
+            searchResults: [],
             }))
-        ));
+        else
+        BooksAPI.search(query).then((res)=> {
+            this.props.books.map((b)=>(
+                res.filter((r)=>(r.id===b.id&&(r.shelf=b.shelf)))
+            ))
+            !('error' in res)&&this.setState(() => ({
+                searchResults: res,
+                }))
+        });
     }
 
     render() {
@@ -30,17 +34,13 @@ class SearchPage extends Component{
                         <input type="text"
                                placeholder="Search by title or author"
                                onChange={(e)=>this.handleInputChange(e.target.value)}/>
-
                     </div>
                 </div>
-                <BookShelf books={this.props.books} changeShelf={this.props.changeShelf}/>
-                <div className="search-books-results">
-                    <div className='bookshelf-books'>
+                <div className='search-books-results'>
+                    <div>
                         <ol className='books-grid'>
                             {
-                                this.state.searchResults.map(
-                                    b => <Book key={b.id} book={b} changeShelf={this.props.changeShelf}/>
-                                )
+                                this.state.searchResults.map((book) => (!('shelf' in book)&&<Book key={book.id} book={book} changeShelf={this.props.changeShelf}/>))
                             }
                         </ol>
                     </div>
