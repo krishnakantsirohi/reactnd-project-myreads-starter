@@ -16,9 +16,14 @@ class SearchPage extends Component{
             }))
         else
         BooksAPI.search(query).then((res)=> {
-            this.props.books.map((b)=>(
-                res.filter((r)=>(r.id===b.id&&(r.shelf=b.shelf)))
-            ))
+            for (let r of res){
+                r.shelf='none';
+                for (let b of this.props.books){
+                    if (r.id===b.id) {
+                        r.shelf = b.shelf;
+                    }
+                }
+            }
             !('error' in res)&&this.setState(() => ({
                 searchResults: res,
                 }))
@@ -40,7 +45,7 @@ class SearchPage extends Component{
                     <div>
                         <ol className='books-grid'>
                             {
-                                this.state.searchResults.map((book) => (!('shelf' in book)&&<Book key={book.id} book={book} changeShelf={this.props.changeShelf}/>))
+                                this.state.searchResults.map((book) => (<Book key={book.id} book={book} changeShelf={this.props.changeShelf}/>))
                             }
                         </ol>
                     </div>
